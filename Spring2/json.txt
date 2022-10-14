@@ -1,0 +1,9 @@
+{"type": "delete","requestList": {"id":"MGI20221007172229155"}}
+
+{"type": "create","requestList": {"type":"1","memberCode":"F62Z","kacType":"1","bankCode":"999","currency":"TWD","pvType":"1","account":"1234567","iType":"1","reason":"Nothing now...","accountList":[{"accNo":"02","price":100},{"accNo":"08","price":300}],"contactName":"Lucy","contactPhone":"09123","status":"0"}}
+
+{"type": "update","requestList": {"id":"MGI20221005140213558","type":"1","memberCode":"F62Z","kacType":"2","bankCode":"999","currency":"TWD","pvType":"1","account":"1234567","iType":"1","reason":"Nothing now...","accountList":[{"accNo":"02","price":100},{"accNo":"08","price":300}],"contactName":"Lucy","contactPhone":"09123","status":"0"}}
+
+{"type": "selectMgni"}
+
+{"type": "selectCashi"}
