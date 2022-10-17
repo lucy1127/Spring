@@ -144,7 +144,7 @@ public class MgniService {
             throw new MgniNotFoundException("This id doesn't exist....");
         }
         mgniRepository.delete(mgniRepository.findMgni(request.getId()));
-        cashiRepository.deleteCashi(request.getId());
+//        cashiRepository.deleteCashi(request.getId());
     }
 
     public List<Cashi> getCashi(CashiRequest request, int page, int size) {

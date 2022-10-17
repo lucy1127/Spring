@@ -1,5 +1,6 @@
 package com.example.Spring3.activeMQ;
 
+import com.example.Spring3.controller.MgniController;
 import com.example.Spring3.controller.dto.request.CreateMgniRequest;
 import com.example.Spring3.controller.dto.request.DeleteRequest;
 import com.example.Spring3.controller.dto.response.DeleteResponse;
@@ -22,14 +23,14 @@ import javax.validation.Valid;
 @Validated
 @RestController
 @RequestMapping("/produce")
-public class QueueProducer {
+public class QueueProducer{
     @Autowired
     private JmsTemplate jmsTemplate;
     @Autowired
     private Queue queue;
     @Autowired
     private MgniService mgniService;
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @GetMapping(value = "/getList")
     public MgniResponse getAllData() {
@@ -44,6 +45,7 @@ public class QueueProducer {
         return mgniResponse;
     }
 
+
     @PostMapping(value = "/create")
     public Mgni create(@Valid @RequestBody CreateMgniRequest request) {
         Mgni mgni = new Mgni();
@@ -51,7 +53,7 @@ public class QueueProducer {
             mgni = this.mgniService.createSettlementMargin(request);
             jmsTemplate(queue, json(mgni));
         } catch (Exception e) {
-            e.getMessage();
+            System.out.println(e.getMessage());
         }
         return mgni;
     }
@@ -90,6 +92,7 @@ public class QueueProducer {
     private static String json(Object object) throws Exception {
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
     }
+
     private void jmsTemplate(Queue queue, String j) {
         jmsTemplate.convertAndSend(queue, j);
     }

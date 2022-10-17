@@ -1,6 +1,5 @@
 package com.example.Spring3;
 
-import com.example.Spring3.activeMQ.TopicConsumer;
 import com.example.Spring3.activeMQ.TopicProducer;
 import com.example.Spring3.controller.dto.response.DeleteResponse;
 import org.junit.jupiter.api.Test;
