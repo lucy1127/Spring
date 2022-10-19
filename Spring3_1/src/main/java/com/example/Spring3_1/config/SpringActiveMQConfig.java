@@ -1,16 +1,21 @@
-package com.example.Spring3.config;
+package com.example.Spring3_1.config;
 
-
+import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.ActiveMQPrefetchPolicy;
 import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.broker.region.policy.RedeliveryPolicyMap;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.util.backoff.FixedBackOff;
 
+import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
@@ -20,14 +25,15 @@ public class SpringActiveMQConfig {
 
     private String brokerUrl = "tcp://localhost:61616";
 
-
     @Bean
     public Queue queue() {
+
         return new ActiveMQQueue("Spring3.queue");
     }
 
     @Bean
     public Topic topic() {
+
         return new ActiveMQTopic("Spring3.topic");
     }
 
@@ -35,10 +41,8 @@ public class SpringActiveMQConfig {
     public ActiveMQConnectionFactory activeMQConnectionFactory() {
         ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(ActiveMQConnectionFactory.DEFAULT_USER,ActiveMQConnectionFactory.DEFAULT_PASSWORD,
                 "failover:(tcp://localhost:61616)?initialReconnectDelay=1000&maxReconnectDelay=30000");
-        //initialReconnectDelay：表示第一次嘗試重連之前等待的時間。 maxReconnectDelay：預設30000，單位毫秒，表示兩次重連之間的最大時間間隔。
         activeMQConnectionFactory.setBrokerURL(brokerUrl);
 
-        //設定 訊息佇列的重發機制
         RedeliveryPolicy queuePolicy = new RedeliveryPolicy();
         queuePolicy.setInitialRedeliveryDelay(0); // 初始重發延遲時間
         queuePolicy.setRedeliveryDelay(1000);//重發延遲時間
@@ -59,11 +63,13 @@ public class SpringActiveMQConfig {
 
         return activeMQConnectionFactory;
     }
+//    ActiveMQ提供failover機制去實現斷線重連的高可用性，可以使得連接斷開之後，不斷的重試連接到一個或多個brokerURL。
+
+
 
     @Bean
     public JmsTemplate jmsTemplate() {
         return new JmsTemplate(activeMQConnectionFactory());
     }
-    //JmsTemplate會自動為您建立Connection、Session、Message並進行傳送
 
 }

@@ -1,4 +1,4 @@
-package com.example.Spring3.activeMQ;
+package com.example.Spring3_1.activeMQ;
 
 import org.apache.log4j.Logger;
 import org.springframework.jms.annotation.JmsListener;
@@ -19,13 +19,9 @@ public class Consumer extends Thread{
     @JmsListener(destination = "Spring3.topic", containerFactory = "topicConnectionFactory")
     public void readActiveQueue(String msg) {
         logger.info("Message received from activemq topic\n" + msg);
-        System.out.println("Q1 : " + msg);
+        System.out.println("Q : " + msg);
     }
 
-    @JmsListener(destination = "Spring3.topic", containerFactory = "topicConnectionFactory")
-    public void readActiveQueue1(String msg) {
-        logger.info("Message received from activemq topic\n" + msg);
-        System.out.println("Q2 : " + msg);
-    }
+
 
 }

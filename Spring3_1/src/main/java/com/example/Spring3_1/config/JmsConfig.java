@@ -1,6 +1,5 @@
-package com.example.Spring3.config;
+package com.example.Spring3_1.config;
 
-import org.apache.activemq.RedeliveryPolicy;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +21,7 @@ public class JmsConfig {
                                                                  DefaultJmsListenerContainerFactoryConfigurer configure) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         configure.configure(factory, connectionFactory);
-        factory.setBackOff(new FixedBackOff(5000, 5));
+        factory.setBackOff(new FixedBackOff(5000,5));
         factory.setPubSubDomain(false);
         return factory;
     }
@@ -32,7 +31,7 @@ public class JmsConfig {
                                                                  DefaultJmsListenerContainerFactoryConfigurer configure) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         configure.configure(factory, connectionFactory);
-        factory.setBackOff(new FixedBackOff(5000, 5));
+        factory.setBackOff(new FixedBackOff(5000,5));
         factory.setPubSubDomain(true);
         return factory;
     }
