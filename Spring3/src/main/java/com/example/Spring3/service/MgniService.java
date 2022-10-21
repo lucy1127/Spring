@@ -139,11 +139,11 @@ public class MgniService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void deleteData(DeleteRequest request) {
-        if (null == mgniRepository.findMgni(request.getId())) {
+    public void deleteData(String request) {
+        if (null == mgniRepository.findMgni(request)) {
             throw new MgniNotFoundException("This id doesn't exist....");
         }
-        mgniRepository.delete(mgniRepository.findMgni(request.getId()));
+        mgniRepository.delete(mgniRepository.findMgni(request));
 //        cashiRepository.deleteCashi(request.getId());
     }
 
@@ -171,39 +171,39 @@ public class MgniService {
         return cashiList.getContent();
     }
 
-    public List<Mgni> getMgni(MgniRequest request, int page, int size) {
-        Specification<Mgni> spec = new Specification<Mgni>() {
-            @Override
-            public Predicate toPredicate(Root<Mgni> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
-                List<Predicate> predicates = new ArrayList<>();
-
-                if (request.getId() != null) {
-                    predicates.add(builder.equal(root.get("id"), request.getId()));
-                }
-                if (request.getMemberCode() != null) {
-                    predicates.add(builder.equal(root.get("memberCode"), request.getMemberCode()));
-                }
-                if (request.getBankCode() != null) {
-                    predicates.add(builder.equal(root.get("bankCode"), request.getBankCode()));
-                }
-                if (request.getBicaccNo() != null) {
-                    predicates.add(builder.equal(root.get("bicaccNo"), request.getBicaccNo()));
-                }
-                if (request.getContactName() != null) {
-                    predicates.add(builder.equal(root.get("contactName"), request.getContactName()));
-                }
-                if (request.getDate() != null) {
-                    LocalDateTime dateTime = LocalDate.parse(request.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd")).atStartOfDay();
-                    predicates.add(builder.between(root.get("time"), dateTime, LocalDateTime.now()));
-                }
-                query.orderBy(builder.asc(root.get("id")));
-                return builder.and(predicates.toArray(new Predicate[predicates.size()]));
-            }
-        };
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Mgni> mgniList = mgniRepository.findAll(spec, pageable);
-        return mgniList.getContent();
-    }
+//    public List<Mgni> getMgni(MgniRequest request, int page, int size) {
+//        Specification<Mgni> spec = new Specification<Mgni>() {
+//            @Override
+//            public Predicate toPredicate(Root<Mgni> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+//                List<Predicate> predicates = new ArrayList<>();
+//
+//                if (request.getId() != null) {
+//                    predicates.add(builder.equal(root.get("id"), request.getId()));
+//                }
+//                if (request.getMemberCode() != null) {
+//                    predicates.add(builder.equal(root.get("memberCode"), request.getMemberCode()));
+//                }
+//                if (request.getBankCode() != null) {
+//                    predicates.add(builder.equal(root.get("bankCode"), request.getBankCode()));
+//                }
+//                if (request.getBicaccNo() != null) {
+//                    predicates.add(builder.equal(root.get("bicaccNo"), request.getBicaccNo()));
+//                }
+//                if (request.getContactName() != null) {
+//                    predicates.add(builder.equal(root.get("contactName"), request.getContactName()));
+//                }
+//                if (request.getDate() != null) {
+//                    LocalDateTime dateTime = LocalDate.parse(request.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd")).atStartOfDay();
+//                    predicates.add(builder.between(root.get("time"), dateTime, LocalDateTime.now()));
+//                }
+//                query.orderBy(builder.asc(root.get("id")));
+//                return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+//            }
+//        };
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Mgni> mgniList = mgniRepository.findAll(spec, pageable);
+//        return mgniList.getContent();
+//    }
 
     public BigDecimal totalPrice(CreateMgniRequest request) {
 

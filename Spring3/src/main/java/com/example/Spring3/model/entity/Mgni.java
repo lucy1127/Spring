@@ -1,6 +1,7 @@
 package com.example.Spring3.model.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -40,9 +41,9 @@ public class Mgni implements Serializable {
 
     @CreatedDate
     @Column(name = "time") //存入日期
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-//    @XmlJavaTypeAdapter(DateAdapter.class)
     private LocalDateTime time;
 
     @Column(name = "type") //存入類型
@@ -87,6 +88,7 @@ public class Mgni implements Serializable {
     @LastModifiedDate //更新時間
 //    @XmlJavaTypeAdapter(DateAdapter.class)
     @Column(name = "u_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime updateTime;

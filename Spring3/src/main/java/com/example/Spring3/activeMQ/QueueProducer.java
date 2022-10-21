@@ -1,38 +1,65 @@
 package com.example.Spring3.activeMQ;
 
-import com.example.Spring3.controller.MgniController;
+
 import com.example.Spring3.controller.dto.request.CreateMgniRequest;
-import com.example.Spring3.controller.dto.request.DeleteRequest;
+import com.example.Spring3.controller.dto.request.Request;
 import com.example.Spring3.controller.dto.response.DeleteResponse;
 import com.example.Spring3.controller.dto.response.MgniResponse;
 import com.example.Spring3.controller.dto.response.UpdateResponse;
 import com.example.Spring3.controller.error.MgniNotFoundException;
 import com.example.Spring3.model.entity.Mgni;
 import com.example.Spring3.service.MgniService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsMessagingTemplate;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.validation.Valid;
+
 
 @Validated
 @RestController
-@RequestMapping("/produce")
-public class QueueProducer{
+public class QueueProducer {
     @Autowired
     private JmsTemplate jmsTemplate;
     @Autowired
     private Queue queue;
     @Autowired
     private MgniService mgniService;
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    @GetMapping(value = "/getList")
+    @JmsListener(destination = "request.queue", containerFactory = "queueConnectionFactory")
+//    @SendTo({"response.queue"})
+    public void receiveQueue(String msg) throws JsonProcessingException{
+        mapper.findAndRegisterModules();
+        System.out.println("Message: " + msg);
+        Request request = new Gson().fromJson(msg, Request.class);
+
+        String temp = "";
+
+        switch (request.getType()) {
+            case "selectMgni":
+                temp = mapper.writeValueAsString(getAllData());
+                break;
+            case "create":
+                temp = mapper.writeValueAsString(create(request.getRequestList()));
+                break;
+            case "update":
+                temp = mapper.writeValueAsString(updateData(request.getRequestList()));
+                break;
+            case "delete":
+                temp = mapper.writeValueAsString(deleteData(request.getRequestList().getId()));
+                break;
+            default:
+                break;
+        }
+    }
+
     public MgniResponse getAllData() {
         MgniResponse mgniResponse = new MgniResponse();
         try {
@@ -46,8 +73,7 @@ public class QueueProducer{
     }
 
 
-    @PostMapping(value = "/create")
-    public Mgni create(@Valid @RequestBody CreateMgniRequest request) {
+    public Mgni create(CreateMgniRequest request) {
         Mgni mgni = new Mgni();
         try {
             mgni = this.mgniService.createSettlementMargin(request);
@@ -58,12 +84,11 @@ public class QueueProducer{
         return mgni;
     }
 
-    @PostMapping(value = "/update")
-    public UpdateResponse updateData(@Valid @RequestBody CreateMgniRequest request) {
+    public UpdateResponse updateData(CreateMgniRequest request) {
         UpdateResponse updateResponse = new UpdateResponse();
         try {
             updateResponse.setMgni(this.mgniService.updateData(request));
-            updateResponse.setMessage("Success");
+            updateResponse.setMessage("Update Success");
             jmsTemplate(queue, json(updateResponse));
         } catch (MgniNotFoundException e) {
             return new UpdateResponse(null, "This id doesn't exist....");
@@ -73,12 +98,11 @@ public class QueueProducer{
         return updateResponse;
     }
 
-    @DeleteMapping(value = "/delete")
-    public DeleteResponse deleteData(@Valid @RequestBody DeleteRequest request) {
+    public DeleteResponse deleteData(String request) {
         DeleteResponse deleteResponse = new DeleteResponse();
         try {
             this.mgniService.deleteData(request);
-            deleteResponse.setMessage("Success");
+            deleteResponse.setMessage("Delete Success");
             jmsTemplate(queue, json(deleteResponse));
         } catch (MgniNotFoundException e) {
             return new DeleteResponse("This id doesn't exist....");
