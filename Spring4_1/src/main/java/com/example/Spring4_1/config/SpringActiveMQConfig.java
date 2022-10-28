@@ -1,0 +1,76 @@
+package com.example.Spring4_1.config;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.RedeliveryPolicy;
+import org.apache.activemq.broker.region.policy.RedeliveryPolicyMap;
+import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTopic;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.destination.DynamicDestinationResolver;
+
+import javax.jms.*;
+import java.util.Random;
+
+@Configuration
+@EnableJms
+public class SpringActiveMQConfig {
+
+    @Value("${activemq.broker.url}")
+    String BROKER_URL;
+    @Value("${spring.activemq.user}")
+    String BROKER_USERNAME;
+    @Value("${spring.activemq.password}")
+    String BROKER_PASSWORD;
+
+    @Bean
+    public Queue queue() {
+
+        return new ActiveMQQueue("Spring3.queue");
+    }
+
+    @Bean
+    public Topic topic() {
+
+        return new ActiveMQTopic("Spring3.topic");
+    }
+
+    @Bean
+    public ActiveMQConnectionFactory activeMQConnectionFactory() {
+        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
+        activeMQConnectionFactory.setTrustAllPackages(true);
+        activeMQConnectionFactory.setBrokerURL(BROKER_URL);
+        activeMQConnectionFactory.setPassword(BROKER_USERNAME);
+        activeMQConnectionFactory.setUserName(BROKER_PASSWORD);
+        return activeMQConnectionFactory;
+    }
+//    ActiveMQ提供failover機制去實現斷線重連的高可用性，可以使得連接斷開之後，不斷的重試連接到一個或多個brokerURL。
+
+
+    @Bean
+    public JmsTemplate jmsTemplate() {
+        JmsTemplate jmsTemplate = new JmsTemplate();
+        jmsTemplate.setDeliveryPersistent(true);
+//        jmsTemplate.setDeliveryMode(DeliveryMode.PERSISTENT);
+        jmsTemplate.setDestinationResolver(destinationResolver());
+        jmsTemplate.setConnectionFactory(activeMQConnectionFactory());
+        return jmsTemplate;
+    }
+
+    @Bean
+    public DynamicDestinationResolver destinationResolver() {
+        return new DynamicDestinationResolver() {
+            @Override
+            public Destination resolveDestinationName(Session session, String destinationName, boolean pubSubDomain) throws JMSException, JMSException {
+                if (destinationName.endsWith(".topic")) {
+                    pubSubDomain = true;
+                }
+                return super.resolveDestinationName(session, destinationName, pubSubDomain);
+            }
+        };
+    }
+
+}

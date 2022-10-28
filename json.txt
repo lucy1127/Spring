@@ -1,0 +1,9 @@
+{"type": "delete","request": {"id":"MGI20221025172914756"}}
+
+{"type": "create","request": {"type":"1","memberCode":"F62Z","kacType":"1","bankCode":"999","currency":"TWD","pvType":"1","account":"1234567","iType":"1","reason":"Nothing now...","accountList":[{"accNo":"02","price":100},{"accNo":"08","price":300}],"contactName":"Lucy","contactPhone":"09123","status":"0"}}
+
+{"type": "update","request": {"id":"MGI20221021110801526","type":"1","memberCode":"F62Z","kacType":"1","bankCode":"999","currency":"TWD","pvType":"1","account":"1234567","iType":"1","reason":"Nothing now...","accountList":[{"accNo":"02","price":100},{"accNo":"08","price":300}],"contactName":"Lucy","contactPhone":"09123","status":"0"}}
+
+{"type": "select"}
+
+{"type": "exit"}
