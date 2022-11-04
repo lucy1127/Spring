@@ -18,13 +18,10 @@ public class Tools {
 
     @Autowired
     TrainRepository trainRepository;
-
     @Autowired
     TrainStopRepository trainStopRepository;
-
     @Autowired
     TrainTicketRepository trainTicketRepository;
-
     @Autowired
     RestTemplate restTemplate;
 

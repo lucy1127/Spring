@@ -17,10 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateTrainRequest {
 
-    @NotNull(message = "train_no cannot be empty")
+    @NotNull(message = "車次不可為空")
     private Integer train_no; //車次
 
-    @NotNull(message = "train_kind cannot be empty")
+    @NotEmpty(message = "車種不可為空")
     private String train_kind; //車種
 
     @NotEmpty(message = "停靠站不可為空")

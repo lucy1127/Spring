@@ -5,11 +5,9 @@ import com.example.springhexpractice.controller.dto.request.CreateTrainTicket;
 import com.example.springhexpractice.controller.dto.response.CreateResponse;
 import com.example.springhexpractice.controller.dto.response.SelectStopResponse;
 import com.example.springhexpractice.controller.dto.response.SelectTrainResponse;
-import com.example.springhexpractice.controller.error.ErrorMessage;
-import com.example.springhexpractice.controller.error.TrainNotFoundException;
 import com.example.springhexpractice.service.TrainService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.NumberFormat;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +20,6 @@ import java.util.List;
 
 @Validated
 @RestController
-//@RequestMapping("/train")
 public class TrainController {
 
     @Autowired

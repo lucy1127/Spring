@@ -24,8 +24,6 @@ public class TrainStop {
     @Length(max = 20, message = "The string length of name must be no more than 20")
     private String stop_name;
 
-//    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-//    @JsonSerialize(using = LocalDateTimeSerializer.class)
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime stop_time;
 }

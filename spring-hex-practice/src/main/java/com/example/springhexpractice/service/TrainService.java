@@ -7,8 +7,7 @@ import com.example.springhexpractice.controller.dto.response.CreateResponse;
 import com.example.springhexpractice.controller.dto.response.SelectStopResponse;
 import com.example.springhexpractice.controller.dto.response.SelectTrainResponse;
 import com.example.springhexpractice.controller.error.CheckCombinedInspectionException;
-import com.example.springhexpractice.controller.error.StopNotFoundException;
-import com.example.springhexpractice.controller.error.TrainNotFoundException;
+import com.example.springhexpractice.controller.error.NotFoundException;
 import com.example.springhexpractice.model.TrainRepository;
 import com.example.springhexpractice.model.TrainStopRepository;
 import com.example.springhexpractice.model.TrainTicketRepository;
@@ -23,10 +22,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -35,16 +31,12 @@ public class TrainService {
 
     @Autowired
     TrainRepository trainRepository;
-
     @Autowired
     TrainStopRepository trainStopRepository;
-
     @Autowired
     TrainTicketRepository trainTicketRepository;
-
     @Autowired
     Tools tool;
-
     @Autowired
     TrainCheck trainCheck;
 
@@ -56,7 +48,7 @@ public class TrainService {
         Train train = trainRepository.findByTrainNo(trainNo);
 
         if (null == train) {
-            throw new TrainNotFoundException("車次不存在");
+            throw new NotFoundException("車次不存在");
         }
 
         List<Train_Stop> trainStopList = trainStopRepository.findByUUID(train.getUuid());
@@ -76,7 +68,7 @@ public class TrainService {
     public List<SelectStopResponse> selectStop(String via) {
         List<String> uuid = trainStopRepository.findByStop(via);
         if (uuid.isEmpty()) {
-            throw new StopNotFoundException("車站不存在");
+            throw new NotFoundException("車站不存在");
         }
         List<SelectStopResponse> trainNo = new ArrayList<>();
 
@@ -93,10 +85,11 @@ public class TrainService {
     public CreateResponse createTrain(CreateTrainRequest request) throws ParseException {
         //check
         List<String> stopsName = request.getStops().stream().map(e -> e.getStop_name()).distinct().collect(Collectors.toList());
+        List<TrainStop> stopSorted = request.getStops().stream().sorted(Comparator.comparing(TrainStop::getStop_time)).collect(Collectors.toList());
+
         trainCheck.checkTrainStatus(request.getTrain_no());
         trainCheck.checkCombinedInspection(request.getTrain_no(), request.getTrain_kind(), request.getStops(), stopsName);
-        trainCheck.stopPositionNotRight(request.getStops());
-        trainCheck.sortedCheck(request.getStops());
+        trainCheck.stopPositionNotRight(stopSorted);
         //
         Train train = new Train();
         train.setUuid(tool.getTrainUUid());
@@ -104,14 +97,14 @@ public class TrainService {
         train.setTrain_kind(new EnumTest(request.getTrain_kind()).trainChangeType().name());
         //
         Train_Stop trainStop = new Train_Stop();
-        for (TrainStop stops : request.getStops()) {
+        for (TrainStop stops : stopSorted) {
 
             trainStop.setUuid(tool.getTrainStopUUid());
             trainStop.setTrain_uuid(train.getUuid());
             trainStop.setName(stops.getStop_name());
             trainStop.setTime(stops.getStop_time());
             trainStop.setDelete_flag("N");
-            trainStop.setSeq(request.getStops().indexOf(stops) + 1);
+            trainStop.setSeq(stopSorted.indexOf(stops) + 1);
             trainStopRepository.save(trainStop);
         }
         trainRepository.save(train);

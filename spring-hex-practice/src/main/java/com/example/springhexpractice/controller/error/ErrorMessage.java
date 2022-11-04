@@ -1,19 +1,14 @@
 package com.example.springhexpractice.controller.error;
 
-import java.util.List;
-import java.util.Map;
 
 public class ErrorMessage {
 
     private String error;
 
-    public ErrorMessage (TrainNotFoundException e){
+    public ErrorMessage (NotFoundException e){
         this.error = e.getErrorMessage();
     }
 
-    public ErrorMessage (StopNotFoundException e){
-        this.error = e.getErrorMessage();
-    }
 
     public String getError() {
         return error;

@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class ErrorExceptionHandler {
@@ -17,40 +15,23 @@ public class ErrorExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handler(MethodArgumentNotValidException e) {
         ErrorResponse error = new ErrorResponse(e);
-
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-
     // 捕捉 ConstraintViolationException
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handler(ConstraintViolationException e) {
-
         ErrorResponse error = new ErrorResponse(e);
-
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-
-    @ExceptionHandler(TrainNotFoundException.class)
-    public ResponseEntity<ErrorMessage> handler(TrainNotFoundException e) {
-        ErrorMessage error = new ErrorMessage(e);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-
 
     @ExceptionHandler(NumberFormatException.class)
     public ResponseEntity<ErrorResponse> handler(NumberFormatException e) {
         ErrorResponse error = new ErrorResponse(e);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(StopNotFoundException.class)
-    public ResponseEntity<ErrorMessage> handler(StopNotFoundException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorMessage> handler(NotFoundException e) {
         ErrorMessage error = new ErrorMessage(e);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-    @ExceptionHandler(CheckTrainException.class)
-    public ResponseEntity<CheckError> handler(CheckTrainException e) {
-        CheckError error = new CheckError(e);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
