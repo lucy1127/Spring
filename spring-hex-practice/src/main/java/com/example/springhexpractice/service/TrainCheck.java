@@ -32,7 +32,7 @@ public class TrainCheck {
             "板橋", "萬華", "台北", "松山", "南港", "汐止", "基隆"};
 
     public void checkTrainStatus(Integer trainNo) {
-        List list = new ArrayList<>();
+
         //呼叫 status-service API 檢核車次是否有效
         String url = "https://petstore.swagger.io/v2/pet/" + trainNo;
 
@@ -41,11 +41,7 @@ public class TrainCheck {
         if (code == 200) {
             CheckStatus check = response.getBody();
             if (!check.getStatus().equals("available")) {
-                Map<String, String> map = new HashMap<>();
-                map.put("code","TrainNotAvailable");
-                map.put("message","Train is not available");
-                list.add(map);
-                throw new CheckCombinedInspectionException("VALIDATE_FAILED",list);
+                checkException("TrainNotAvailable","Train is not available");
             }
         }
     }
@@ -84,8 +80,6 @@ public class TrainCheck {
     public void stopPositionNotRight(List<TrainStop> stopsList) {
 
         boolean correct = false;
-        List list = new ArrayList<>();
-        Map<String, String> map = new HashMap<>();
 
         List<Integer> stopNumbers = new ArrayList<>();
 
@@ -110,17 +104,11 @@ public class TrainCheck {
         }
 
         if (correct) {
-            map.put("code", "TrainStopsNotSorted");
-            map.put("message", "Train Stops is not sorted");
-            list.add(map);
-            throw new CheckCombinedInspectionException("VALIDATE_FAILED", list);
+            checkException("TrainStopsNotSorted","Train Stops is not sorted");
         }
     }
 
     public void checkStop(Integer trainNo, String fromStop, String toStop) {
-
-        List list = new ArrayList<>();
-        Map<String, String> map = new HashMap<>();
 
         String trainUid = trainRepository.findByTrainNo(trainNo).getUuid();
 
@@ -134,22 +122,18 @@ public class TrainCheck {
         int fromSeq = trainStopRepository.findByUuidAndName(trainUid, fromStop);
         int toSeq = trainStopRepository.findByUuidAndName(trainUid, toStop);
 
-        if (fromSeq > toSeq) {
-            map.put("code", "TicketStopsInvalid");
-            map.put("message", "Ticket From & To is invalid");
-            list.add(map);
+        if (fromSeq > toSeq || fromStop.equals(toStop) ) {
+            checkException("TicketStopsInvalid","Ticket From & To is invalid");
         }
+    }
 
-        //相同
-        if (fromStop.equals(toStop)) {
-            map.put("code", "TicketStopsInvalid");
-            map.put("message", "Ticket From & To is invalid");
-            list.add(map);
-        }
-
-        if (list.size() > 0) {
-            throw new CheckCombinedInspectionException("VALIDATE_FAILED", list);
-        }
+    private void checkException(String code,String message){
+        List list = new ArrayList<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("code",code);
+        map.put("message",message);
+        list.add(map);
+        throw new CheckCombinedInspectionException("VALIDATE_FAILED", list);
     }
 
 }
