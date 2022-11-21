@@ -11,15 +11,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jms.Queue;
 import javax.persistence.criteria.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.Spring3.service.Time.localDate;
@@ -27,6 +34,10 @@ import static com.example.Spring3.service.Time.localTime;
 
 @Service
 public class MgniService {
+    @Autowired
+    private JmsTemplate jmsTemplate;
+    @Autowired
+    private Queue queue;
 
     @Autowired
     MgniRepository mgniRepository;
@@ -42,6 +53,13 @@ public class MgniService {
 
     @Transactional(rollbackFor = Exception.class)
     public Mgni createSettlementMargin(CreateMgniRequest request) {
+        String err = error(request);
+
+        if (err.length() != 0) {
+            jmsTemplate.convertAndSend(queue, err);
+            return null;
+        }
+
         if (request.getKacType().equals("1")) {
             amt = totalPrice(request);
         } else {
@@ -64,13 +82,14 @@ public class MgniService {
                 .status("0")
                 .build();
 
-        mgni.setCashiList(disCashi(mgni.getId(),request));
+        mgni.setCashiList(disCashi(mgni.getId(), request));
         mgniRepository.save(mgni);
         return mgniRepository.findMgni(mgni.getId());
+
     }
 
     private List<Cashi> disCashi(String id, CreateMgniRequest request) {
-        List<Cashi> cashiList=new ArrayList<>();
+        List<Cashi> cashiList = new ArrayList<>();
         if (request.getAccountList() != null && request.getKacType().equals("1")) {
             List<String> disAccList = request.getAccountList().stream().map(e -> e.getAccNo()).distinct().collect(Collectors.toList());
             for (String disAcc : disAccList) {
@@ -101,7 +120,12 @@ public class MgniService {
 
     @Transactional(rollbackFor = Exception.class)
     public Mgni updateData(CreateMgniRequest request) {
+        String err = error(request);
 
+        if (err.length() != 0) {
+            jmsTemplate.convertAndSend(queue, err);
+            return null;
+        }
         cashiRepository.deleteCashi(request.getId());
         Mgni mgni = mgniRepository.findMgni(request.getId());
 
@@ -139,12 +163,12 @@ public class MgniService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void deleteData(DeleteRequest request) {
-        if (null == mgniRepository.findMgni(request.getId())) {
+    public void deleteData(String request) {
+        if (null == mgniRepository.findMgni(request)) {
             throw new MgniNotFoundException("This id doesn't exist....");
         }
-        mgniRepository.delete(mgniRepository.findMgni(request.getId()));
-        cashiRepository.deleteCashi(request.getId());
+        mgniRepository.delete(mgniRepository.findMgni(request));
+//        cashiRepository.deleteCashi(request.getId());
     }
 
     public List<Cashi> getCashi(CashiRequest request, int page, int size) {
@@ -171,39 +195,39 @@ public class MgniService {
         return cashiList.getContent();
     }
 
-    public List<Mgni> getMgni(MgniRequest request, int page, int size) {
-        Specification<Mgni> spec = new Specification<Mgni>() {
-            @Override
-            public Predicate toPredicate(Root<Mgni> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
-                List<Predicate> predicates = new ArrayList<>();
-
-                if (request.getId() != null) {
-                    predicates.add(builder.equal(root.get("id"), request.getId()));
-                }
-                if (request.getMemberCode() != null) {
-                    predicates.add(builder.equal(root.get("memberCode"), request.getMemberCode()));
-                }
-                if (request.getBankCode() != null) {
-                    predicates.add(builder.equal(root.get("bankCode"), request.getBankCode()));
-                }
-                if (request.getBicaccNo() != null) {
-                    predicates.add(builder.equal(root.get("bicaccNo"), request.getBicaccNo()));
-                }
-                if (request.getContactName() != null) {
-                    predicates.add(builder.equal(root.get("contactName"), request.getContactName()));
-                }
-                if (request.getDate() != null) {
-                    LocalDateTime dateTime = LocalDate.parse(request.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd")).atStartOfDay();
-                    predicates.add(builder.between(root.get("time"), dateTime, LocalDateTime.now()));
-                }
-                query.orderBy(builder.asc(root.get("id")));
-                return builder.and(predicates.toArray(new Predicate[predicates.size()]));
-            }
-        };
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Mgni> mgniList = mgniRepository.findAll(spec, pageable);
-        return mgniList.getContent();
-    }
+//    public List<Mgni> getMgni(MgniRequest request, int page, int size) {
+//        Specification<Mgni> spec = new Specification<Mgni>() {
+//            @Override
+//            public Predicate toPredicate(Root<Mgni> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+//                List<Predicate> predicates = new ArrayList<>();
+//
+//                if (request.getId() != null) {
+//                    predicates.add(builder.equal(root.get("id"), request.getId()));
+//                }
+//                if (request.getMemberCode() != null) {
+//                    predicates.add(builder.equal(root.get("memberCode"), request.getMemberCode()));
+//                }
+//                if (request.getBankCode() != null) {
+//                    predicates.add(builder.equal(root.get("bankCode"), request.getBankCode()));
+//                }
+//                if (request.getBicaccNo() != null) {
+//                    predicates.add(builder.equal(root.get("bicaccNo"), request.getBicaccNo()));
+//                }
+//                if (request.getContactName() != null) {
+//                    predicates.add(builder.equal(root.get("contactName"), request.getContactName()));
+//                }
+//                if (request.getDate() != null) {
+//                    LocalDateTime dateTime = LocalDate.parse(request.getDate(), DateTimeFormatter.ofPattern("yyyyMMdd")).atStartOfDay();
+//                    predicates.add(builder.between(root.get("time"), dateTime, LocalDateTime.now()));
+//                }
+//                query.orderBy(builder.asc(root.get("id")));
+//                return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+//            }
+//        };
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Mgni> mgniList = mgniRepository.findAll(spec, pageable);
+//        return mgniList.getContent();
+//    }
 
     public BigDecimal totalPrice(CreateMgniRequest request) {
 
@@ -212,6 +236,23 @@ public class MgniService {
             totalprice = totalprice.add(acc.getPrice());
         }
         return totalprice;
+    }
+
+    public static String error(CreateMgniRequest check) {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        // 根據validatorFactory拿到一個Validator
+        Validator validator = validatorFactory.getValidator();
+        // 使用validator對結果進行校驗
+        Set<ConstraintViolation<CreateMgniRequest>> result = validator.validate(check);
+        StringBuilder stringBuilder = new StringBuilder();
+        //把結果列印出來
+        result.stream().map(v -> v.getPropertyPath() + " " + v.getMessage() + ": " + v.getInvalidValue())
+                .forEach(System.out::println);
+        for (ConstraintViolation<CreateMgniRequest> e : result) {
+            System.out.println(e.getMessage());
+            stringBuilder.append(e.getMessage()).append("\n");
+        }
+        return stringBuilder.toString();
     }
 
 

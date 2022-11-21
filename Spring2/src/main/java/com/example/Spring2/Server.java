@@ -87,6 +87,7 @@ public class Server extends Thread {
             logger.error("Error Message: ", new Exception("Internal server problem"));
         }
     }
+
     public static void writeOutput(String message, Socket s) throws IOException {
         PrintWriter pr = new PrintWriter(s.getOutputStream());
         pr.println(message);

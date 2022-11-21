@@ -14,8 +14,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "DeleteResponse")
+//@XmlAccessorType(XmlAccessType.FIELD)
+//@XmlRootElement(name = "DeleteResponse")
 public class DeleteResponse {
     private String message;
 }
